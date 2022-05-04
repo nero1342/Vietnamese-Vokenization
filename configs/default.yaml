@@ -1,0 +1,23 @@
+ID: None 
+WEIGHTS: None 
+
+MODEL:
+  VISUAL_MODEL:
+    NAME: resnet50 
+    FINE_TUNING: False 
+    HIDDEN_DIM: 256 
+    DROPOUT: 0.3
+  LANG_MODEL:
+    NAME: bert
+    HIDDEN_DIM: 256 
+    DROPOUT: 0.3
+  CROSS_FEATURE_DIM: 64
+
+DATASET:
+  IMG_SPLITS: [
+    'mscoco_train',
+    'mscoco_nominival',
+    'vgnococo',
+    'mscoco_minival',
+    ]
+  LANG_SPLITS: ['mscoco', 'vg', 'vqa', 'gqa', 'visual7w']
