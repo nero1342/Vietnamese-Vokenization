@@ -1,11 +1,11 @@
 from pytorch_lightning import LightningModule, Trainer, seed_everything
 from pytorch_lightning.callbacks.progress import TQDMProgressBar
-from pytorch_lightning.loggers import WandbLogger
+from pytorch_lightning.loggers import WandbLogger, TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 import datetime
 import torch 
 from pprint import pprint 
-
+import os 
 from configs.config import Config
 from models.matching.model import JointModel
 from models.matching.loss import LossComputer
@@ -52,17 +52,24 @@ class Model(LightningModule):
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.cfg.TRAIN.LR)
         return optimizer
 
+from argparse import ArgumentParser
+def main(): 
+    parser = ArgumentParser()
+    parser.add_argument("--config", type=str, default="configs/default.yaml")
+    args = parser.parse_args()
 
-def main():
-    cfg_path = 'configs/default.yaml'
+    cfg_path = args.config
     cfg = Config(cfg_path)
     pprint(cfg)
     seed_everything(cfg.SEED)
 
     # Logger 
     long_id = '%s_%s' % (datetime.datetime.now().strftime('%b%d_%H.%M.%S'), cfg.ID)
-    wandb_logger = WandbLogger(name=long_id,project=cfg.PROJECT, log_model="all")
-    wandb_logger.experiment.config.update(cfg)
+    if cfg.LOGGER.USE_WANDB:
+      logger = WandbLogger(name=long_id,project=cfg.PROJECT, log_model="all")
+      logger.experiment.config.update(cfg)
+    else:
+      logger = TensorBoardLogger(save_dir=os.getcwd(), version=long_id)
 
     # Checkpoint 
     # saves top-K checkpoints based on "val_loss" metric
@@ -78,7 +85,7 @@ def main():
     model = Model(cfg)
     dm = XMatchingDataModule(cfg)
     trainer = Trainer(
-        logger=wandb_logger,
+        logger=logger,
         precision=16,
         max_epochs=20,
         accelerator="auto",
@@ -86,6 +93,7 @@ def main():
         callbacks=[TQDMProgressBar(refresh_rate=1), checkpoint_callback],
     )
     trainer.fit(model, dm)
+    trainer.save_checkpoint(f"lightning_logs/{long_id}/final.ckpt")
 
 if __name__ == "__main__":
     main()
