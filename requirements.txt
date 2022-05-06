@@ -3,3 +3,4 @@ pytorch-lightning
 transformers 
 sentencepiece  
 wandb
+faiss-gpu
