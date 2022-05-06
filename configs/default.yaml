@@ -1,23 +1,35 @@
-ID: None 
+ID: Matching 
+SEED: 42
 WEIGHTS: None 
 
+TRAIN:
+    LR: 0.0001
+    BATCH_SIZE: 256
+    NUM_WORKERS: 8
 MODEL:
   VISUAL_MODEL:
-    NAME: resnet50 
+    NAME: resnext101_32x8d 
     FINE_TUNING: False 
     HIDDEN_DIM: 256 
     DROPOUT: 0.3
   LANG_MODEL:
-    NAME: bert
+    NAME: vinai/phobert-base
+    FINE_TUNING: False 
     HIDDEN_DIM: 256 
     DROPOUT: 0.3
   CROSS_FEATURE_DIM: 64
 
+METRIC:
+  RECALL: [1, 5, 10]
+  
 DATASET:
-  IMG_SPLITS: [
-    'mscoco_train',
-    'mscoco_nominival',
-    'vgnococo',
-    'mscoco_minival',
-    ]
-  LANG_SPLITS: ['mscoco', 'vg', 'vqa', 'gqa', 'visual7w']
+  TRAIN:
+    IMG_SPLITS: [
+      'mscoco_train_vi_vi',
+      'mscoco_nominival_vi_vi',
+      'vgnococo_vi_vi',
+      ]
+    LANG_SPLITS: ['mscoco']
+  VAL:
+    IMG_SPLITS: [ 'mscoco_minival_vi_vi', ]
+    LANG_SPLITS: ['mscoco']
